@@ -19,6 +19,7 @@ type cellType struct {
 	str  string
 	list [][]byte
 	ht   float64
+	wd   float64
 }
 
 func (c *controller) SavePDF() error {
@@ -26,13 +27,11 @@ func (c *controller) SavePDF() error {
 	// get data from repo
 	data := c.csv.Get()
 	pdf := gofpdf.New("P", "mm", "A4", "") // 210 x 297
+	colWeights := []float64{3, 3, 1}
 	pdf.SetFont("Arial", "", 10)
 	pdf.AddPage()
 
 	pageW, pageH := pdf.GetPageSize()
-
-	// distribute cols evenly by page width
-	colWd := math.Floor((pageW - (2 * marginH)) / colCount)
 
 	// Rows
 	y := pdf.GetY()
@@ -53,7 +52,8 @@ func (c *controller) SavePDF() error {
 				cell.str = fmtChildStr(fmly)
 			}
 
-			cell.list = pdf.SplitLines([]byte(cell.str), colWd-cellGap-cellGap)
+			cell.wd = getColWidth(pageW, marginH, colWeights, col)
+			cell.list = pdf.SplitLines([]byte(cell.str), cell.wd-cellGap-cellGap)
 			cell.ht = float64(len(cell.list)) * lineHt
 			if cell.ht > maxHt {
 				maxHt = cell.ht
@@ -70,16 +70,16 @@ func (c *controller) SavePDF() error {
 		// Cell render loop
 		x := marginH
 		for col := 0; col < colCount; col++ {
-			pdf.Rect(x, y, colWd, maxHt+cellGap+cellGap, "D")
 			cell := cellList[col]
+			pdf.Rect(x, y, cell.wd, maxHt+cellGap+cellGap, "D")
 			cellY := y + cellGap
 			for splitJ := 0; splitJ < len(cell.list); splitJ++ {
 				pdf.SetXY(x+cellGap, cellY)
-				pdf.CellFormat(colWd-cellGap-cellGap, lineHt, string(cell.list[splitJ]), "", 0,
+				pdf.CellFormat(cell.wd-cellGap-cellGap, lineHt, string(cell.list[splitJ]), "", 0,
 					"L", false, 0, "")
 				cellY += lineHt
 			}
-			x += colWd
+			x += cell.wd
 		}
 		y += maxHt + cellGap + cellGap
 	}
@@ -135,4 +135,16 @@ func fmtChildStr(family entities.Entry) string {
 	}
 
 	return str
+}
+
+func getColWidth(pageW, margin float64, colWeights []float64, colIndex int) float64 {
+	// subtract margins
+	pageW -= (margin * 2)
+
+	// scale col based on weight
+	totalWeight := 0.0
+	for _, w := range colWeights {
+		totalWeight += w
+	}
+	return math.Floor(pageW * (colWeights[colIndex] / totalWeight))
 }
