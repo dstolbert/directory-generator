@@ -3,7 +3,7 @@ unit:
 	go tool cover -func coverage.out
 
 mocks:
-	export WD=$(PWD) && go generate ./...
+	components .
 
 # generic run command
 run:
