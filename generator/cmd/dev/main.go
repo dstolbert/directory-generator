@@ -17,7 +17,7 @@ func main() {
 		logrus.Fatal("Error loading .env file")
 	}
 
-	// init repo
+	// init csv repo
 	csv := csvrepository.New(csvrepository.Params{
 		Filepath: os.Getenv("CSV_PATH"),
 		OS:       osutils.New(osutils.Params{}),
@@ -25,7 +25,8 @@ func main() {
 
 	// create controller and save data to pdf
 	c := pdfcontroller.New(pdfcontroller.Params{
-		CSV: csv,
+		CSV:    csv,
+		Output: os.Getenv("PDF_OUT"),
 	})
 	c.SavePDF()
 }

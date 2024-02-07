@@ -8,17 +8,20 @@ type controller struct {
 		skipTestFile::true
 	*/
 
-	csv csvrepository.Repository
+	output string
+	csv    csvrepository.Repository
 }
 
 type Params struct {
-	CSV csvrepository.Repository
+	Output string
+	CSV    csvrepository.Repository
 }
 
 func (p *Params) Convert() *controller {
 
 	r := controller{
-		csv: p.CSV,
+		csv:    p.CSV,
+		output: p.Output,
 	}
 
 	return &r
