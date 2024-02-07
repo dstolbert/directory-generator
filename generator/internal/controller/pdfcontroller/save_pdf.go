@@ -1,7 +1,7 @@
 package pdfcontroller
 
 import (
-	"fmt"
+	"math"
 
 	"github.com/dstolbert/directory-generator/entities"
 	"github.com/jung-kurt/gofpdf"
@@ -9,7 +9,6 @@ import (
 
 const (
 	colCount = 3
-	colWd    = 60.0
 	marginH  = 10.0
 	lineHt   = 5.5
 	cellGap  = 1.0
@@ -26,13 +25,14 @@ func (c *controller) SavePDF() error {
 
 	// get data from repo
 	data := c.csv.Get()
-
 	pdf := gofpdf.New("P", "mm", "A4", "") // 210 x 297
-	alignList := [colCount]string{"L", "L", "L"}
 	pdf.SetFont("Arial", "", 10)
 	pdf.AddPage()
 
-	_, pageH := pdf.GetPageSize()
+	pageW, pageH := pdf.GetPageSize()
+
+	// distribute cols evenly by page width
+	colWd := math.Floor((pageW - (2 * marginH)) / colCount)
 
 	// Rows
 	y := pdf.GetY()
@@ -40,7 +40,7 @@ func (c *controller) SavePDF() error {
 
 		maxHt := lineHt
 		cellList := [colCount]cellType{}
-		// Cell height calculation loop
+		// Format cells and determine needed height based on largest cell height
 		for col := 0; col < colCount; col++ {
 
 			cell := cellType{}
@@ -65,7 +65,6 @@ func (c *controller) SavePDF() error {
 		if y+maxHt+cellGap+cellGap+marginH+marginH > pageH {
 			pdf.AddPage()
 			y = pdf.GetY()
-			fmt.Println("adding page. new y: ", y)
 		}
 
 		// Cell render loop
@@ -77,7 +76,7 @@ func (c *controller) SavePDF() error {
 			for splitJ := 0; splitJ < len(cell.list); splitJ++ {
 				pdf.SetXY(x+cellGap, cellY)
 				pdf.CellFormat(colWd-cellGap-cellGap, lineHt, string(cell.list[splitJ]), "", 0,
-					alignList[col], false, 0, "")
+					"L", false, 0, "")
 				cellY += lineHt
 			}
 			x += colWd
