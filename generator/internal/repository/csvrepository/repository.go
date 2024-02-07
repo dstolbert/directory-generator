@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/dstolbert/directory-generator/entities"
 	"github.com/dstolbert/osutils"
 	"github.com/sirupsen/logrus"
 )
@@ -12,7 +13,7 @@ import (
 type repository struct {
 	filepath string
 	os       osutils.Osutils
-	data     []Entry
+	data     []entities.Entry
 
 	/*
 		generate::components
@@ -45,7 +46,7 @@ func (p *Params) Convert() *repository {
 	defer f.Close()
 
 	// Load csv
-	r.data = []Entry{}
+	r.data = []entities.Entry{}
 	csvReader := r.os.CSVNewReader(f)
 	i := 0
 	for {
@@ -59,7 +60,7 @@ func (p *Params) Convert() *repository {
 
 		// parse data to Entry struct
 		if i > 0 {
-			r.data = append(r.data, parseLine(rec))
+			r.data = append(r.data, entities.ParseLine(rec))
 		}
 		i++
 	}
@@ -71,7 +72,7 @@ func (p *Params) Convert() *repository {
 // Component version: v0.1.0
 
 type Repository interface {
-	Get() []Entry
+	Get() []entities.Entry
 }
 
 func New(p Params) Repository {

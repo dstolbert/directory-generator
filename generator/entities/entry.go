@@ -1,4 +1,4 @@
-package csvrepository
+package entities
 
 type Entry struct {
 	LastName                 string
@@ -52,7 +52,7 @@ type Entry struct {
 }
 
 // helper to convert a line from a csv to an entry
-func parseLine(line []string) Entry {
+func ParseLine(line []string) Entry {
 	e := Entry{}
 
 	// big nasty switch
@@ -158,4 +158,41 @@ func parseLine(line []string) Entry {
 	}
 
 	return e
+}
+
+// Simple helper to generate test data
+func GenerateCsvLine() []string {
+
+	return []string{
+		"Smith",
+		"John",
+		"Jane",
+		"123 Fun ave",
+		"Mesa",
+		"AZ",
+		"85123",
+		"480-123-4567",
+		"February",
+		"7",
+		"john.smith@fun.com",
+		"480-123-4567",
+		"St John",
+		"Jan",
+		"1",
+		"jane.smith@fun.com",
+		"602-123-4567",
+		"St Mary",
+		"Dec",
+		"4th",
+		"Billy",
+		"St John",
+		"Mar",
+		"10th",
+		"Willy",
+		"St Paul",
+		"April",
+		"30th",
+		"Jimmy",
+		"St James",
+	}
 }

@@ -6,6 +6,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/dstolbert/directory-generator/entities"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -30,7 +31,7 @@ func TestGet(t *testing.T) {
 						return nil, io.EOF
 					}
 
-					return generateCsvLine(), nil
+					return entities.GenerateCsvLine(), nil
 				})
 			},
 		},

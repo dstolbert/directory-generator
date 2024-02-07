@@ -3,7 +3,7 @@
 package csvrepository_mocks
 
 import (
-	csvrepository "github.com/dstolbert/directory-generator/internal/repository/csvrepository"
+	entities "github.com/dstolbert/directory-generator/entities"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,19 +21,19 @@ func (_m *Repository) EXPECT() *Repository_Expecter {
 }
 
 // Get provides a mock function with given fields:
-func (_m *Repository) Get() []csvrepository.Entry {
+func (_m *Repository) Get() []entities.Entry {
 	ret := _m.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 []csvrepository.Entry
-	if rf, ok := ret.Get(0).(func() []csvrepository.Entry); ok {
+	var r0 []entities.Entry
+	if rf, ok := ret.Get(0).(func() []entities.Entry); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]csvrepository.Entry)
+			r0 = ret.Get(0).([]entities.Entry)
 		}
 	}
 
@@ -57,12 +57,12 @@ func (_c *Repository_Get_Call) Run(run func()) *Repository_Get_Call {
 	return _c
 }
 
-func (_c *Repository_Get_Call) Return(_a0 []csvrepository.Entry) *Repository_Get_Call {
+func (_c *Repository_Get_Call) Return(_a0 []entities.Entry) *Repository_Get_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Repository_Get_Call) RunAndReturn(run func() []csvrepository.Entry) *Repository_Get_Call {
+func (_c *Repository_Get_Call) RunAndReturn(run func() []entities.Entry) *Repository_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -109,14 +109,14 @@ func (_c Repository_GetChain[M]) Run(run func()) Repository_GetChain[M] {
 	}
 }
 
-func (_c Repository_GetChain[M]) Return(_a0 []Entry) Repository_GetChain[M] {
+func (_c Repository_GetChain[M]) Return(_a0 []entities.Entry) Repository_GetChain[M] {
 	return func(m *M) *Repository_Get_Call {
 		call := _c(m)
 		return call.Return(_a0)
 	}
 }
 
-func (_c Repository_GetChain[M]) RunAndReturn(run func() []Entry) Repository_GetChain[M] {
+func (_c Repository_GetChain[M]) RunAndReturn(run func() []entities.Entry) Repository_GetChain[M] {
 	return func(m *M) *Repository_Get_Call {
 		call := _c(m)
 		return call.RunAndReturn(run)
@@ -130,7 +130,7 @@ func (_c Repository_ExpecterChain[M]) Get_Pointer() Repository_GetChain[M] {
 	}
 }
 
-func (_c Repository_GetChain[M]) Return_Pointer(_a0 *[]Entry) Repository_GetChain[M] {
+func (_c Repository_GetChain[M]) Return_Pointer(_a0 *[]entities.Entry) Repository_GetChain[M] {
 	return func(m *M) *Repository_Get_Call {
 		call := _c(m)
 		return call.Return(*_a0)
