@@ -1,16 +1,20 @@
 package pdfcontroller
 
 import (
+	"errors"
 	"math"
+	"os"
 
 	"github.com/dstolbert/directory-generator/entities"
-	"github.com/jung-kurt/gofpdf"
+	"github.com/go-pdf/fpdf"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	colCount = 3
+	colCount = 4
 	marginH  = 10.0
 	lineHt   = 5.5
+	photoHt  = 10.0
 	cellGap  = 1.0
 )
 
@@ -26,8 +30,8 @@ func (c *controller) SavePDF() error {
 
 	// get data from repo
 	data := c.csv.Get()
-	pdf := gofpdf.New("P", "mm", "A4", "") // 210 x 297
-	colWeights := []float64{3, 3, 1}
+	pdf := fpdf.New("P", "mm", "A4", "") // 210 x 297
+	colWeights := []float64{3, 3, 1, 3}
 	pdf.SetFont("Arial", "", 10)
 	pdf.AddPage()
 
@@ -39,6 +43,8 @@ func (c *controller) SavePDF() error {
 
 		maxHt := lineHt
 		cellList := [colCount]cellType{}
+		photo := ""
+		var err error
 		// Format cells and determine needed height based on largest cell height
 		for col := 0; col < colCount; col++ {
 
@@ -46,8 +52,20 @@ func (c *controller) SavePDF() error {
 
 			if col == 0 && fmly.FirstName_Man != "" {
 				cell.str = fmtManStr(fmly)
+				photo, err = c.photos.Get(fmly.FirstName_Man, fmly.LastName)
+				if err != nil && !errors.Is(err, os.ErrNotExist) {
+					logrus.Errorln("error finding photo: ", err)
+				}
 			} else if col == 1 && fmly.FirstName_Woman != "" {
 				cell.str = fmtWomanStr(fmly)
+
+				// try and find photo if not listed by mans name
+				if photo == "" {
+					photo, err = c.photos.Get(fmly.FirstName_Woman, fmly.LastName)
+					if err != nil && !errors.Is(err, os.ErrNotExist) {
+						logrus.Errorln("error finding photo: ", err)
+					}
+				}
 			} else if col == 2 && fmly.Child_1_First_Name != "" {
 				cell.str = fmtChildStr(fmly)
 			}
@@ -59,6 +77,11 @@ func (c *controller) SavePDF() error {
 				maxHt = cell.ht
 			}
 			cellList[col] = cell
+		}
+
+		// Format cell with photo in it
+		if photo != "" && photoHt > maxHt {
+			maxHt = photoHt
 		}
 
 		// do we need another page to fit this row?

@@ -1,6 +1,9 @@
 package pdfcontroller
 
-import "github.com/dstolbert/directory-generator/internal/repository/csvrepository"
+import (
+	"github.com/dstolbert/directory-generator/internal/repository/csvrepository"
+	"github.com/dstolbert/directory-generator/internal/repository/photorepository"
+)
 
 type controller struct {
 	/*
@@ -10,11 +13,13 @@ type controller struct {
 
 	output string
 	csv    csvrepository.Repository
+	photos photorepository.Repository
 }
 
 type Params struct {
 	Output string
 	CSV    csvrepository.Repository
+	Photos photorepository.Repository
 }
 
 func (p *Params) Convert() *controller {
@@ -22,6 +27,7 @@ func (p *Params) Convert() *controller {
 	r := controller{
 		csv:    p.CSV,
 		output: p.Output,
+		photos: p.Photos,
 	}
 
 	return &r
