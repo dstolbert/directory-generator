@@ -14,7 +14,7 @@ const (
 	colCount = 4
 	marginH  = 10.0
 	lineHt   = 5.5
-	photoHt  = 10.0
+	photoHt  = 60.0
 	cellGap  = 1.0
 )
 
@@ -31,7 +31,7 @@ func (c *controller) SavePDF() error {
 	// get data from repo
 	data := c.csv.Get()
 	pdf := fpdf.New("P", "mm", "A4", "") // 210 x 297
-	colWeights := []float64{3, 3, 1, 3}
+	colWeights := []float64{2, 2, 1, 3}
 	pdf.SetFont("Arial", "", 10)
 	pdf.AddPage()
 
@@ -96,13 +96,22 @@ func (c *controller) SavePDF() error {
 			cell := cellList[col]
 			pdf.Rect(x, y, cell.wd, maxHt+cellGap+cellGap, "D")
 			cellY := y + cellGap
-			for splitJ := 0; splitJ < len(cell.list); splitJ++ {
-				pdf.SetXY(x+cellGap, cellY)
-				pdf.CellFormat(cell.wd-cellGap-cellGap, lineHt, string(cell.list[splitJ]), "", 0,
-					"L", false, 0, "")
-				cellY += lineHt
+
+			// Text columns
+			if col < 3 {
+				for splitJ := 0; splitJ < len(cell.list); splitJ++ {
+					pdf.SetXY(x+cellGap, cellY)
+					pdf.CellFormat(cell.wd-cellGap-cellGap, lineHt, string(cell.list[splitJ]), "", 0,
+						"L", false, 0, "")
+					cellY += lineHt
+				}
+			} else if photo != "" {
+				// Photo columns
+				pdf.Image(photo, x+cellGap, cellY, 0, photoHt, false, "", 0, "S")
 			}
+
 			x += cell.wd
+
 		}
 		y += maxHt + cellGap + cellGap
 	}

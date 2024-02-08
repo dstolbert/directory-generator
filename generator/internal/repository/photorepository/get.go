@@ -2,13 +2,18 @@ package photorepository
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 func (r *repository) Get(firstName, lastName string) (string, error) {
 
+	// lowercase names
+	firstName = strings.ToLower(firstName)
+	lastName = strings.ToLower(lastName)
+
 	// search photo dir for a filename match
-	files, err := r.os.ReadDir("./")
+	files, err := r.os.ReadDir(r.filepath)
 	if err != nil {
 		return "", err
 	}
@@ -16,8 +21,9 @@ func (r *repository) Get(firstName, lastName string) (string, error) {
 	for _, f := range files {
 
 		// substring match last and first names
-		if strings.Contains(f.Name(), firstName) && strings.Contains(f.Name(), lastName) {
-			return f.Name(), nil
+		lower := strings.ToLower(f.Name())
+		if strings.Contains(lower, firstName) && strings.Contains(lower, lastName) {
+			return filepath.Join(r.filepath, f.Name()), nil
 		}
 
 	}
