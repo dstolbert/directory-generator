@@ -120,12 +120,19 @@ func (c *controller) SavePDF() error {
 }
 
 func fmtManStr(family entities.Entry) string {
-	str := family.FirstName_Man + " " + family.LastName + "\n" +
-		"home: " + family.HomePhone + "\n" +
-		"phone: " + family.MansCell + "\n" +
-		"email: " + family.MansEmail + "\n" +
-		"birthday: " + family.MansBirthday_Month + "/" + family.MansBirthday_Day + "\n"
-
+	str := family.FirstName_Man + " " + family.LastName + "\n"
+	if family.HomePhone != "" {
+		str += "home: " + family.HomePhone + "\n"
+	}
+	if family.MansCell != "" {
+		str += "phone: " + family.MansCell + "\n"
+	}
+	if family.MansEmail != "" {
+		str += "email: " + family.MansEmail + "\n"
+	}
+	if family.MansBirthday_Month != "" {
+		str += "birthday: " + family.MansBirthday_Month + "/" + family.MansBirthday_Day + "\n"
+	}
 	if family.WeddingAnniversary_Month != "" {
 		str += "anniversary:" + family.WeddingAnniversary_Month + "/" + family.WeddingAnniversary_Day
 	}
@@ -134,11 +141,21 @@ func fmtManStr(family entities.Entry) string {
 }
 
 func fmtWomanStr(family entities.Entry) string {
-	return family.FirstName_Woman + " " + family.LastName + "\n" +
-		"home: " + family.HomePhone + "\n" +
-		"phone: " + family.WomansCell + "\n" +
-		"email: " + family.WomansEmail + "\n" +
-		"birthday: " + family.WomansBirthday_Month + "/" + family.WomansBirthday_Day
+	str := family.FirstName_Woman + " " + family.LastName + "\n"
+	if family.HomePhone != "" {
+		str += "home: " + family.HomePhone + "\n"
+	}
+	if family.WomansCell != "" {
+		str += "phone: " + family.WomansCell + "\n"
+	}
+	if family.WomansEmail != "" {
+		str += "email: " + family.WomansEmail + "\n"
+	}
+	if family.WomansBirthday_Month != "" {
+		str += "birthday: " + family.WomansBirthday_Month + "/" + family.WomansBirthday_Day + "\n"
+	}
+
+	return str
 }
 
 func fmtChildStr(family entities.Entry) string {
