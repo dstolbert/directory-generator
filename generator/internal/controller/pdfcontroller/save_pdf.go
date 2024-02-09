@@ -43,7 +43,7 @@ func (c *controller) SavePDF() error {
 
 		maxHt := lineHt
 		cellList := [colCount]cellType{}
-		photo := ""
+		photo := entities.Image{}
 		var err error
 		// Format cells and determine needed height based on largest cell height
 		for col := 0; col < colCount; col++ {
@@ -60,7 +60,7 @@ func (c *controller) SavePDF() error {
 				cell.str = fmtWomanStr(fmly)
 
 				// try and find photo if not listed by mans name
-				if photo == "" {
+				if photo.Filepath == "" {
 					photo, err = c.photos.Get(fmly.FirstName_Woman, fmly.LastName)
 					if err != nil && !errors.Is(err, os.ErrNotExist) {
 						logrus.Errorln("error finding photo: ", err)
@@ -80,7 +80,7 @@ func (c *controller) SavePDF() error {
 		}
 
 		// Format cell with photo in it
-		if photo != "" && photoHt > maxHt {
+		if photo.Filepath != "" && photoHt > maxHt {
 			maxHt = photoHt
 		}
 
@@ -105,9 +105,23 @@ func (c *controller) SavePDF() error {
 						"L", false, 0, "")
 					cellY += lineHt
 				}
-			} else if photo != "" {
+			} else if photo.Filepath != "" {
+
+				// normally, we set height and dynamically scale width
+				ht := photoHt
+				wt := 0.0
+
+				// if image is horizontal, then scale width and do the height dynamically
+				if photo.Width > photo.Height {
+					ht = 0
+					wt = cell.wd - cellGap - cellGap
+				}
+
 				// Photo columns
-				pdf.Image(photo, x+cellGap, cellY, 0, photoHt, false, "", 0, "S")
+				pdf.ImageOptions(photo.Filepath, x+cellGap, cellY, wt, ht, false, fpdf.ImageOptions{
+					ReadDpi:   false,
+					ImageType: "",
+				}, 0, "S")
 			}
 
 			x += cell.wd

@@ -5,6 +5,8 @@ package photorepository_mocks
 import (
 	"github.com/flywingedai/components/tests"
 
+	entities "github.com/dstolbert/directory-generator/entities"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -22,22 +24,22 @@ func (_m *Repository) EXPECT() *Repository_Expecter {
 }
 
 // Get provides a mock function with given fields: firstName, lastName
-func (_m *Repository) Get(firstName string, lastName string) (string, error) {
+func (_m *Repository) Get(firstName string, lastName string) (entities.Image, error) {
 	ret := _m.Called(firstName, lastName)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Get")
 	}
 
-	var r0 string
+	var r0 entities.Image
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(string, string) (entities.Image, error)); ok {
 		return rf(firstName, lastName)
 	}
-	if rf, ok := ret.Get(0).(func(string, string) string); ok {
+	if rf, ok := ret.Get(0).(func(string, string) entities.Image); ok {
 		r0 = rf(firstName, lastName)
 	} else {
-		r0 = ret.Get(0).(string)
+		r0 = ret.Get(0).(entities.Image)
 	}
 
 	if rf, ok := ret.Get(1).(func(string, string) error); ok {
@@ -68,12 +70,12 @@ func (_c *Repository_Get_Call) Run(run func(firstName string, lastName string)) 
 	return _c
 }
 
-func (_c *Repository_Get_Call) Return(_a0 string, _a1 error) *Repository_Get_Call {
+func (_c *Repository_Get_Call) Return(_a0 entities.Image, _a1 error) *Repository_Get_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Repository_Get_Call) RunAndReturn(run func(string, string) (string, error)) *Repository_Get_Call {
+func (_c *Repository_Get_Call) RunAndReturn(run func(string, string) (entities.Image, error)) *Repository_Get_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -120,14 +122,14 @@ func (_c Repository_GetChain[M]) Run(run func(firstName string, lastName string)
 	}
 }
 
-func (_c Repository_GetChain[M]) Return(_a0 string, _a1 error) Repository_GetChain[M] {
+func (_c Repository_GetChain[M]) Return(_a0 entities.Image, _a1 error) Repository_GetChain[M] {
 	return func(m *M) *Repository_Get_Call {
 		call := _c(m)
 		return call.Return(_a0, _a1)
 	}
 }
 
-func (_c Repository_GetChain[M]) RunAndReturn(run func(firstName string, lastName string) (string, error)) Repository_GetChain[M] {
+func (_c Repository_GetChain[M]) RunAndReturn(run func(firstName string, lastName string) (entities.Image, error)) Repository_GetChain[M] {
 	return func(m *M) *Repository_Get_Call {
 		call := _c(m)
 		return call.RunAndReturn(run)
@@ -141,7 +143,7 @@ func (_c Repository_ExpecterChain[M]) Get_Pointer(firstName interface{}, lastNam
 	}
 }
 
-func (_c Repository_GetChain[M]) Return_Pointer(_a0 *string, _a1 *error) Repository_GetChain[M] {
+func (_c Repository_GetChain[M]) Return_Pointer(_a0 *entities.Image, _a1 *error) Repository_GetChain[M] {
 	return func(m *M) *Repository_Get_Call {
 		call := _c(m)
 		return call.Return(*_a0, *_a1)

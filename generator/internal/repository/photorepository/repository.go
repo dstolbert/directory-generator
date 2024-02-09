@@ -1,6 +1,7 @@
 package photorepository
 
 import (
+	"github.com/dstolbert/directory-generator/entities"
 	"github.com/dstolbert/osutils"
 	"github.com/sirupsen/logrus"
 )
@@ -40,7 +41,7 @@ func (p *Params) Convert() *repository {
 // Component version: v0.1.0
 
 type Repository interface {
-	Get(firstName string, lastName string) (string, error)
+	Get(firstName string, lastName string) (entities.Image, error)
 }
 
 func New(p Params) Repository {
