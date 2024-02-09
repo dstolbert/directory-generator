@@ -122,6 +122,7 @@ func (c *controller) SavePDF() error {
 					ReadDpi:   false,
 					ImageType: "",
 				}, 0, "S")
+				pdf.GetImageInfo(photo.Filepath).SetDpi(1)
 			}
 
 			x += cell.wd
