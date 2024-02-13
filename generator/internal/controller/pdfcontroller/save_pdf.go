@@ -11,11 +11,12 @@ import (
 )
 
 const (
-	colCount = 4
-	marginH  = 10.0
-	lineHt   = 5.5
-	photoHt  = 60.0
-	cellGap  = 1.0
+	colCount       = 4
+	marginH        = 4.0
+	lineHt         = 5.5
+	photoHt        = 50.0
+	cellGap        = 1.0
+	familyHeaderHt = 10.0
 )
 
 // var colStrList [colCount]string
@@ -31,7 +32,7 @@ func (c *controller) SavePDF() error {
 	// get data from repo
 	data := c.csv.Get()
 	pdf := fpdf.New("P", "mm", "A4", "") // 210 x 297
-	colWeights := []float64{2, 2, 1, 3}
+	colWeights := []float64{2, 2, 2, 1}
 	pdf.SetFont("Arial", "", 10)
 	pdf.AddPage()
 
@@ -45,18 +46,19 @@ func (c *controller) SavePDF() error {
 		cellList := [colCount]cellType{}
 		photo := entities.Image{}
 		var err error
+		totalColWid := 0.0
 		// Format cells and determine needed height based on largest cell height
 		for col := 0; col < colCount; col++ {
 
 			cell := cellType{}
 
-			if col == 0 && fmly.FirstName_Man != "" {
+			if col == 1 && fmly.FirstName_Man != "" {
 				cell.str = fmtManStr(fmly)
 				photo, err = c.photos.Get(fmly.FirstName_Man, fmly.LastName)
 				if err != nil && !errors.Is(err, os.ErrNotExist) {
 					logrus.Errorln("error finding photo: ", err)
 				}
-			} else if col == 1 && fmly.FirstName_Woman != "" {
+			} else if col == 2 && fmly.FirstName_Woman != "" {
 				cell.str = fmtWomanStr(fmly)
 
 				// try and find photo if not listed by mans name
@@ -66,11 +68,12 @@ func (c *controller) SavePDF() error {
 						logrus.Errorln("error finding photo: ", err)
 					}
 				}
-			} else if col == 2 && fmly.Child_1_First_Name != "" {
+			} else if col == 3 && fmly.Child_1_First_Name != "" {
 				cell.str = fmtChildStr(fmly)
 			}
 
 			cell.wd = getColWidth(pageW, marginH, colWeights, col)
+			totalColWid += cell.wd
 			cell.list = pdf.SplitLines([]byte(cell.str), cell.wd-cellGap-cellGap)
 			cell.ht = float64(len(cell.list)) * lineHt
 			if cell.ht > maxHt {
@@ -79,32 +82,61 @@ func (c *controller) SavePDF() error {
 			cellList[col] = cell
 		}
 
+		// if no mans name, shift cells, recalculate cell widths
+		if fmly.FirstName_Man == "" {
+			cellList[0] = cellList[1]
+			cellList[0].wd = getColWidth(pageW, marginH, colWeights[1:], 0)
+			cellList[1] = cellList[2]
+			cellList[1].wd = getColWidth(pageW, marginH, colWeights[1:], 1)
+			cellList[2] = cellList[3]
+			cellList[2].wd = getColWidth(pageW, marginH, colWeights[1:], 2)
+			cellList[3] = cellType{}
+		} else if fmly.FirstName_Woman == "" {
+			cellList[1].wd = getColWidth(pageW, marginH, colWeights[1:], 0)
+			cellList[2] = cellList[3]
+			cellList[2].wd = getColWidth(pageW, marginH, colWeights[1:], 1)
+			cellList[3] = cellType{}
+		}
+
 		// Format cell with photo in it
 		if photo.Filepath != "" && photoHt > maxHt {
 			maxHt = photoHt
 		}
 
 		// do we need another page to fit this row?
-		if y+maxHt+cellGap+cellGap+marginH+marginH > pageH {
+		if y+maxHt+cellGap+cellGap+marginH+marginH+familyHeaderHt+10 > pageH {
 			pdf.AddPage()
 			y = pdf.GetY()
 		}
 
-		// Cell render loop
+		// Create family name header
 		x := marginH
+		pdf.SetFillColor(194, 196, 195)
+		pdf.SetFont("Arial", "B", 16)
+		pdf.Rect(x, y, totalColWid, familyHeaderHt, "DF")
+		cellY := y + cellGap
+		pdf.SetXY(x+cellGap, cellY)
+		pdf.CellFormat(totalColWid, familyHeaderHt, fmly.LastName, "", 0,
+			"C", false, 0, "")
+		y += familyHeaderHt + 1
+		pdf.SetFont("Arial", "", 10)
+
+		// Cell render loop
+		pdf.SetFillColor(256, 256, 256)
 		for col := 0; col < colCount; col++ {
 			cell := cellList[col]
-			pdf.Rect(x, y, cell.wd, maxHt+cellGap+cellGap, "D")
+			pdf.Rect(x, y, cell.wd, maxHt+cellGap+cellGap, "F")
 			cellY := y + cellGap
 
 			// Text columns
-			if col < 3 {
+			if col > 0 {
 				for splitJ := 0; splitJ < len(cell.list); splitJ++ {
 					pdf.SetXY(x+cellGap, cellY)
 					pdf.CellFormat(cell.wd-cellGap-cellGap, lineHt, string(cell.list[splitJ]), "", 0,
 						"L", false, 0, "")
 					cellY += lineHt
 				}
+				x += cell.wd
 			} else if photo.Filepath != "" {
 
 				// normally, we set height and dynamically scale width
@@ -123,9 +155,8 @@ func (c *controller) SavePDF() error {
 					ImageType: "",
 				}, 0, "S")
 				pdf.GetImageInfo(photo.Filepath).SetDpi(1)
+				x += cell.wd
 			}
-
-			x += cell.wd
 
 		}
 		y += maxHt + cellGap + cellGap
@@ -135,15 +166,15 @@ func (c *controller) SavePDF() error {
 }
 
 func fmtManStr(family entities.Entry) string {
-	str := family.FirstName_Man + " " + family.LastName + "\n"
+	str := family.FirstName_Man + "\n"
 	if family.HomePhone != "" {
-		str += "home: " + family.HomePhone + "\n"
+		str += family.HomePhone + "\n"
 	}
-	if family.MansCell != "" {
-		str += "phone: " + family.MansCell + "\n"
+	if family.MansCell != "" && family.MansCell != family.HomePhone {
+		str += "cell: " + family.MansCell + "\n"
 	}
 	if family.MansEmail != "" {
-		str += "email: " + family.MansEmail + "\n"
+		str += family.MansEmail + "\n"
 	}
 	if family.MansBirthday_Month != "" {
 		str += "birthday: " + family.MansBirthday_Month + "/" + family.MansBirthday_Day + "\n"
@@ -156,15 +187,15 @@ func fmtManStr(family entities.Entry) string {
 }
 
 func fmtWomanStr(family entities.Entry) string {
-	str := family.FirstName_Woman + " " + family.LastName + "\n"
-	if family.HomePhone != "" {
-		str += "home: " + family.HomePhone + "\n"
+	str := family.FirstName_Woman + "\n"
+	if family.HomePhone != "" && family.FirstName_Man == "" {
+		str += family.HomePhone + "\n"
 	}
-	if family.WomansCell != "" {
-		str += "phone: " + family.WomansCell + "\n"
+	if family.WomansCell != "" && family.WomansCell != family.HomePhone {
+		str += "cell: " + family.WomansCell + "\n"
 	}
 	if family.WomansEmail != "" {
-		str += "email: " + family.WomansEmail + "\n"
+		str += family.WomansEmail + "\n"
 	}
 	if family.WomansBirthday_Month != "" {
 		str += "birthday: " + family.WomansBirthday_Month + "/" + family.WomansBirthday_Day + "\n"
@@ -177,25 +208,52 @@ func fmtChildStr(family entities.Entry) string {
 	str := ""
 
 	if family.Child_1_First_Name != "" {
-		str += family.Child_1_First_Name + " " + family.Child_1_Birthday_Month + "/" + family.Child_1_Birthday_Day + "\n"
+		str += family.Child_1_First_Name
+		if family.Child_1_Birthday_Month != "" {
+			str += " " + family.Child_1_Birthday_Month + "/" + family.Child_1_Birthday_Day
+		}
+		str += "\n"
 	}
 	if family.Child_2_First_Name != "" {
-		str += family.Child_2_First_Name + " " + family.Child_2_Birthday_Month + "/" + family.Child_2_Birthday_Day + "\n"
+		str += family.Child_2_First_Name
+		if family.Child_2_Birthday_Month != "" {
+			str += " " + family.Child_2_Birthday_Month + "/" + family.Child_2_Birthday_Day
+		}
+		str += "\n"
 	}
 	if family.Child_3_First_Name != "" {
-		str += family.Child_3_First_Name + " " + family.Child_3_Birthday_Month + "/" + family.Child_3_Birthday_Day + "\n"
+		str += family.Child_3_First_Name
+		if family.Child_3_Birthday_Month != "" {
+			str += " " + family.Child_3_Birthday_Month + "/" + family.Child_3_Birthday_Day
+		}
+		str += "\n"
 	}
 	if family.Child_4_First_Name != "" {
-		str += family.Child_4_First_Name + " " + family.Child_4_Birthday_Month + "/" + family.Child_4_Birthday_Day + "\n"
+		str += family.Child_4_First_Name
+		if family.Child_4_Birthday_Month != "" {
+			str += " " + family.Child_4_Birthday_Month + "/" + family.Child_4_Birthday_Day
+		}
+		str += "\n"
 	}
 	if family.Child_5_First_Name != "" {
-		str += family.Child_5_First_Name + " " + family.Child_5_Birthday_Month + "/" + family.Child_5_Birthday_Day + "\n"
+		str += family.Child_5_First_Name
+		if family.Child_5_Birthday_Month != "" {
+			str += " " + family.Child_5_Birthday_Month + "/" + family.Child_5_Birthday_Day
+		}
+		str += "\n"
 	}
 	if family.Child_6_First_Name != "" {
-		str += family.Child_6_First_Name + " " + family.Child_6_Birthday_Month + "/" + family.Child_6_Birthday_Day + "\n"
+		str += family.Child_6_First_Name
+		if family.Child_6_Birthday_Month != "" {
+			str += " " + family.Child_6_Birthday_Month + "/" + family.Child_6_Birthday_Day
+		}
+		str += "\n"
 	}
 	if family.Child_7_First_Name != "" {
-		str += family.Child_7_First_Name + " " + family.Child_7_Birthday_Month + "/" + family.Child_7_Birthday_Day
+		str += family.Child_7_First_Name
+		if family.Child_7_Birthday_Month != "" {
+			str += " " + family.Child_7_Birthday_Month + "/" + family.Child_7_Birthday_Day
+		}
 	}
 
 	return str

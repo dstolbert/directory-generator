@@ -66,7 +66,7 @@ func (r *repository) Get(firstName, lastName string) (entities.Image, error) {
 					draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 
 					// Encode to `output`:
-					jpeg.Encode(output, dst, &jpeg.Options{Quality: 80})
+					jpeg.Encode(output, dst, &jpeg.Options{Quality: 90})
 				}
 			} else {
 				logrus.Errorln("Impossible to open the file:", err)
