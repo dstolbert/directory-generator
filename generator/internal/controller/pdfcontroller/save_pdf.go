@@ -2,6 +2,7 @@ package pdfcontroller
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"os"
 
@@ -68,7 +69,7 @@ func (c *controller) SavePDF() error {
 						logrus.Errorln("error finding photo: ", err)
 					}
 				}
-			} else if col == 3 && fmly.Child_1_First_Name != "" {
+			} else if col == 3 && len(fmly.Children) > 0 {
 				cell.str = fmtChildStr(fmly)
 			}
 
@@ -205,55 +206,16 @@ func fmtWomanStr(family entities.Entry) string {
 }
 
 func fmtChildStr(family entities.Entry) string {
+
 	str := ""
 
-	if family.Child_1_First_Name != "" {
-		str += family.Child_1_First_Name
-		if family.Child_1_Birthday_Month != "" {
-			str += " " + family.Child_1_Birthday_Month + "/" + family.Child_1_Birthday_Day
+	for _, child := range family.Children {
+		fmt.Println("adding child: ", child.FirstName, family.LastName)
+		str += child.FirstName
+		if child.BirthdayMonth != "" {
+			str += " " + child.BirthdayMonth + "/" + child.BirthdayDay
 		}
 		str += "\n"
-	}
-	if family.Child_2_First_Name != "" {
-		str += family.Child_2_First_Name
-		if family.Child_2_Birthday_Month != "" {
-			str += " " + family.Child_2_Birthday_Month + "/" + family.Child_2_Birthday_Day
-		}
-		str += "\n"
-	}
-	if family.Child_3_First_Name != "" {
-		str += family.Child_3_First_Name
-		if family.Child_3_Birthday_Month != "" {
-			str += " " + family.Child_3_Birthday_Month + "/" + family.Child_3_Birthday_Day
-		}
-		str += "\n"
-	}
-	if family.Child_4_First_Name != "" {
-		str += family.Child_4_First_Name
-		if family.Child_4_Birthday_Month != "" {
-			str += " " + family.Child_4_Birthday_Month + "/" + family.Child_4_Birthday_Day
-		}
-		str += "\n"
-	}
-	if family.Child_5_First_Name != "" {
-		str += family.Child_5_First_Name
-		if family.Child_5_Birthday_Month != "" {
-			str += " " + family.Child_5_Birthday_Month + "/" + family.Child_5_Birthday_Day
-		}
-		str += "\n"
-	}
-	if family.Child_6_First_Name != "" {
-		str += family.Child_6_First_Name
-		if family.Child_6_Birthday_Month != "" {
-			str += " " + family.Child_6_Birthday_Month + "/" + family.Child_6_Birthday_Day
-		}
-		str += "\n"
-	}
-	if family.Child_7_First_Name != "" {
-		str += family.Child_7_First_Name
-		if family.Child_7_Birthday_Month != "" {
-			str += " " + family.Child_7_Birthday_Month + "/" + family.Child_7_Birthday_Day
-		}
 	}
 
 	return str

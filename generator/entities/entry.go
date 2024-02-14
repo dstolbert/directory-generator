@@ -21,34 +21,14 @@ type Entry struct {
 	WomansSaintName          string
 	WomansBirthday_Month     string
 	WomansBirthday_Day       string
-	Child_1_First_Name       string
-	Child_1_Saint_Name       string
-	Child_1_Birthday_Month   string
-	Child_1_Birthday_Day     string
-	Child_2_First_Name       string
-	Child_2_Saint_Name       string
-	Child_2_Birthday_Month   string
-	Child_2_Birthday_Day     string
-	Child_3_First_Name       string
-	Child_3_Saint_Name       string
-	Child_3_Birthday_Month   string
-	Child_3_Birthday_Day     string
-	Child_4_First_Name       string
-	Child_4_Saint_Name       string
-	Child_4_Birthday_Month   string
-	Child_4_Birthday_Day     string
-	Child_5_First_Name       string
-	Child_5_Saint_Name       string
-	Child_5_Birthday_Month   string
-	Child_5_Birthday_Day     string
-	Child_6_First_Name       string
-	Child_6_Saint_Name       string
-	Child_6_Birthday_Month   string
-	Child_6_Birthday_Day     string
-	Child_7_First_Name       string
-	Child_7_Saint_Name       string
-	Child_7_Birthday_Month   string
-	Child_7_Birthday_Day     string
+	Children                 []Child
+}
+
+type Child struct {
+	FirstName     string
+	SaintName     string
+	BirthdayMonth string
+	BirthdayDay   string
 }
 
 // helper to convert a line from a csv to an entry
@@ -99,65 +79,76 @@ func ParseLine(line []string) Entry {
 		case 19:
 			e.WomansBirthday_Day = v
 		case 20:
-			e.Child_1_First_Name = v
-		case 21:
-			e.Child_1_Saint_Name = v
-		case 22:
-			e.Child_1_Birthday_Month = v
-		case 23:
-			e.Child_1_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
 		case 24:
-			e.Child_2_First_Name = v
-		case 25:
-			e.Child_2_Saint_Name = v
-		case 26:
-			e.Child_2_Birthday_Month = v
-		case 27:
-			e.Child_2_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
+
 		case 28:
-			e.Child_3_First_Name = v
-		case 29:
-			e.Child_3_Saint_Name = v
-		case 30:
-			e.Child_3_Birthday_Month = v
-		case 31:
-			e.Child_3_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
+
 		case 32:
-			e.Child_4_First_Name = v
-		case 33:
-			e.Child_4_Saint_Name = v
-		case 34:
-			e.Child_4_Birthday_Month = v
-		case 35:
-			e.Child_4_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
+
 		case 36:
-			e.Child_5_First_Name = v
-		case 37:
-			e.Child_5_Saint_Name = v
-		case 38:
-			e.Child_5_Birthday_Month = v
-		case 39:
-			e.Child_5_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
+
 		case 40:
-			e.Child_6_First_Name = v
-		case 41:
-			e.Child_6_Saint_Name = v
-		case 42:
-			e.Child_6_Birthday_Month = v
-		case 43:
-			e.Child_6_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
 		case 44:
-			e.Child_7_First_Name = v
-		case 45:
-			e.Child_7_Saint_Name = v
-		case 46:
-			e.Child_7_Birthday_Month = v
-		case 47:
-			e.Child_7_Birthday_Day = v
+			saveChild(Child{
+				FirstName:     v,
+				SaintName:     line[i+1],
+				BirthdayMonth: line[i+2],
+				BirthdayDay:   line[i+3],
+			}, &e)
+
 		}
 	}
 
 	return e
+}
+
+// Saves child in place to the family.Children array
+func saveChild(c Child, family *Entry) {
+
+	if family.Children == nil {
+		family.Children = []Child{}
+	}
+
+	// Only save if child has a name
+	if c.FirstName != "" {
+		family.Children = append(family.Children, c)
+	}
 }
 
 // Simple helper to generate test data
